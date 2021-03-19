@@ -4,7 +4,7 @@ nwbwidgets==0.4.0
 pyecore==0.11.6
 pygeppetto==0.8.0
 pynwb==1.3.0
-Pillow==7.0.0
+Pillow==8.1.1
 quantities==0.12.3
 nose==1.3.7
 redis==2.10.6
