@@ -1,12 +1,12 @@
 import os
 import subprocess
 import sys
-import json
 
 
 branch = None
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
 
 # repos
 JUPYTER = 'https://github.com/openworm/org.geppetto.frontend.jupyter.git'
@@ -19,9 +19,13 @@ DEPS_DIR = os.path.join(ROOT_DIR, 'src')
 WEBAPP_DIR = os.path.join(ROOT_DIR, 'webapp')
 JUPYTER_DIR = 'jupyter-geppetto'
 
+os.environ['JUPYTER_CONFIG_DIR'] = os.path.join(ROOT_DIR, '.jupyter-config')
+
+
 def cprint(string):
     print(f"\033[35;4m\U0001f560 {string} \033[0m \n")
     sys.stdout.flush()
+
 
 # by default clones branch (which can be passed as a parameter python install.py branch test_branch)
 # if branch doesnt exist clones the default_branch_or_tag
@@ -55,6 +59,7 @@ def checkout(folder, default_branch_or_tag, cwdp):
         subprocess.call(['git', 'checkout', default_branch_or_tag], cwd='./')
     os.chdir(currentPath)
 
+
 def execute(cmd, cwd='.'):
     exit_code = subprocess.call(cmd, cwd=cwd)
     if exit_code != 0:
@@ -62,12 +67,8 @@ def execute(cmd, cwd='.'):
 
 
 def main(branch=branch, skipNpm=False, skipTest=False, development=False):
-
-
     print(f"{steps()}\n")
     sys.stdout.flush()
-
-
 
     # install pytest if needed
     if not skipTest:
@@ -106,9 +107,8 @@ def main(branch=branch, skipNpm=False, skipTest=False, development=False):
 
     if not skipNpm and os.path.exists(os.path.join(DEPS_DIR, JUPYTER_DIR)):
         cprint("Building Jupyter Geppetto extension...")
-        execute(cmd=['npm', 'ci'], cwd=os.path.join(DEPS_DIR,JUPYTER_DIR, 'js'))
+        execute(cmd=['npm', 'ci'], cwd=os.path.join(DEPS_DIR, JUPYTER_DIR, 'js'))
         execute(cmd=['npm', 'run', 'build-dev' if development else 'build'], cwd=os.path.join(DEPS_DIR, JUPYTER_DIR, 'js'))
-
 
     execute(cmd=['jupyter', 'nbextension', 'install', '--py', '--symlink', '--sys-prefix', 'jupyter_geppetto'])
     execute(cmd=['jupyter', 'nbextension', 'enable', '--py', '--sys-prefix', 'jupyter_geppetto'])
@@ -116,6 +116,8 @@ def main(branch=branch, skipNpm=False, skipTest=False, development=False):
     execute(cmd=['jupyter', 'serverextension', 'enable', '--py', '--sys-prefix', 'jupyter_geppetto'])
 
     cprint("Installing notebook theme")
+    # Generate a default config if not already present
+    execute(cmd=['jupyter', 'notebook', '--generate-config'])
     from jupyter_core import paths
     config_dir = paths.jupyter_config_dir()
     print('Jupyter configuration dir is {}'.format(config_dir))
@@ -130,17 +132,13 @@ def main(branch=branch, skipNpm=False, skipTest=False, development=False):
     else:
         cprint("Testing NWB-Explorer")
         execute(cmd=['python', '-m', 'pytest',
-            '--ignore=src',
-            ], cwd=ROOT_DIR)
-
+                     '--ignore=src',
+                     ], cwd=ROOT_DIR)
 
     cprint("Installing client packages")
     if not skipNpm:
         execute(cmd=['npm', 'install' if development else 'ci'], cwd=WEBAPP_DIR)
         execute(cmd=['npm', 'run', 'build-dev' if development else 'build'], cwd=WEBAPP_DIR)
-
-
-
 
 
 def steps():

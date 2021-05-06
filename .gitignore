@@ -25,3 +25,4 @@ geppetto-client
 /bin
 /nwb-explorer
 pyvenv.cfg
+.jupyter-config

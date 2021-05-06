@@ -1,2 +1,4 @@
 #!/bin/sh
+CONFIG=$(pwd)/.jupyter-config
+export JUPYTER_CONFIG_DIR=$CONFIG
 exec jupyter notebook --NotebookApp.default_url=/geppetto --NotebookApp.token='' --library=nwb_explorer
